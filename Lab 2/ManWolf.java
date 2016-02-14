@@ -1,6 +1,19 @@
-/*
+/**
+ * file: ManWolf.java
+ * author: Juan Bancamper
+ * course: CMPT 440
+ * assignment: Lab 2
+ * due date: February 15, 2016
+ * 
+ * This file contains the the ManWolf DFA table and its behaviors
+ */
 
-*/
+/**
+ * ManWolf
+ *
+ * This class implements a DFA in a table and processes input
+ * to determine an accepting state.
+ */
 
 public class ManWolf {
     
@@ -32,6 +45,17 @@ public class ManWolf {
 
     static private int state = q0;
 
+    /**
+     * process
+     * 
+     * This function iterates over a string, character by character,
+     * to be able to deterrmine an accepting state
+     *
+     * Parameters:
+     *     in: the string to be iterated
+     * 
+     * Return value: none
+     */
     static void process(String in){
         if(in.length() < 1){
             return;
@@ -69,6 +93,16 @@ public class ManWolf {
         }
     }
 
+    /**
+     * isCorrect
+     *
+     * This function checks if the state is in an accepting state
+     *
+     * Parameters:
+     *     none
+     *
+     * Return value: true or false if state is accepting
+     */
     static boolean isCorrect(){
         return state == q9;
     }
