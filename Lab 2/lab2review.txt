@@ -1,0 +1,29 @@
+9 pts
+
+Correctness:
+
+- The program produces correct output.
+
+- The program produces output in the correct format.
+
+
+Style:
+
+- Correct indentation
+
+- Good block comments
+
+
+Efficiency and Other Comments:
+
+- Program is efficient as implemented. 
+
+
+CSV files:
+
+- State-transition table is good.
+
+- Description of each state file is missing.
+
+
+- Dr. Rivas
