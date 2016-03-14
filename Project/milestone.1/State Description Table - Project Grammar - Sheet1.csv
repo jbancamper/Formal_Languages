@@ -1,0 +1,41 @@
+,Description
+q0,Start state
+q1,Non-accepting Statement: AssingmentStatement: waiting for 'space'
+q2,"Non-accepting Statement: PrintStatement, waiting for 'p'"
+q3,"Non-accepting Statement: VarDeclaration, waiting for 'a'"
+q4,"Non-accepting Statement: AssingmentStatement, waiting for '='. Validates Expression: Identifier"
+q5,"Non-accepting Statement: VarDeclaration, waiting for 'r'"
+q6,"Non-accepting Statement: PrintStatement, waiting for 'i'"
+q7,"Non-accepting Statement: VarDeclaration, waiting for 'space'. Accept keyword var"
+q8,"Non-accepting Statement: AssignmentStatement, waiting for 'space'. Accept assignment"
+q9,"Non-accepting Statement: PrintStatement, waiting for 'n'"
+q10,"Non-accepting Statement: PrintStatement, waiting for 't'"
+q11,"Non-accepting Statement: VarDeclaration, waiting for Expression: Identifier"
+q12,Statement:(VarDeclaration: Identifier | AssignmentStatement: Expression: Identifier)
+q13,"Non-accepting Statement: AssignmentStatement, waiting for Expression. Can accept intop"
+q14,"Non-accepting Statement: PrintStatement, waiting for '('. Accepting keyword print"
+q15,"Non-accepting Statement: PrintStatement, waiting for 'space'"
+q16,"Non-accepting Statement: PrintStatement, waiting for Expression. Can accept intop"
+q17,"Non-accepting Statement: AssingmentStatement: Expression: StringExpr, waiting or 'space'"
+q18,Statement: AssingmentStatement: Expression: IntExpr
+q19,"Non-accepting Statement: AssignmentStatement: Expression: StringExpr, waiting for 'a-z' or 'space"
+q20,"Non-accepting Statement: AssignmentStatement: Expression: StringExpr, waiting for 'space'. Accepting CharList"
+q21,"Non-accepting Statement: AssignmentStatement: Expression: StringExpr, waiting for "". Accepting CharList"
+q22,Statement: AssingmentStatement: Expression: StringExpr
+q23,"Non-accepting Statement: PrintStatement: Expression, waiting for 'space'. Accepting Expression: IntExpr"
+q24,"Non-accepting Statement: PrintStatement: Expression, waiting for 'space'"
+q25,"Non-accepting Statement: PrintStatement: Expression, waiting for 'a-z' or 'space'"
+q26,"Non-accepting Statement: PrintStatement: Expression, waiting for 'space'. Accepting CharList"
+q27,"Non-accepting Statement: PrintStatement: Expression, waiting for "". Accepting CharList"
+q28,"Non-accepting Statement: PrintStatement, waiting for 'space'. Accepting Expression: StringExpr"
+q29,"Non-accepting Statement: PrintStatement, waiting for 'space'. Accepting Expression: Identifier"
+q30,"Non-accepting Statement: PrintStatement, waiting for ')'"
+q31,Statement: PrintStatement
+q32,"Non-accepting Statement: Comment, waiting for '-'"
+q33,"Non-accepting Statement: Comment, waiting for 'space'"
+q34,"Non-accepting Statement: Comment, waiting for 'a-z' or 'space'"
+q35,"Non-accepting Statement: Comment, waiting for 'a-z' or 'space'"
+q36,"Non-accepting Statement: Comment, waiting for 'a-z', 'space', or '-'"
+q37,"Non-accepting Statement: Comment, waiting for '*'"
+q38,Statement: Comment
+q39,Error State
