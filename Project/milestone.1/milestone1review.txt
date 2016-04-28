@@ -1,0 +1,35 @@
+100 pts
+
+Neat DFA diagram in a .pdf
+- ok
+State-transition table
+- ok
+Descriptions of each state
+- ok
+5 test cases accepted by the DFA
+- ok
+5 test cases rejected by the DFA 
+- ok
+
+Analysis
+- Good quality of DFA diagram
+- Good state descriptions
+- Good and efficient construction of the DFA
+
+Completeness 
+- Test cases are difficult and interesting
+- Includes both correct and incorrect statements
+- Includes both correct and incorrect  asignments
+- Includes both correct and incorrect identifiers
+
+Correctness
+- DFA diagram is correct
+- Tables are correct
+- Test cases are correct
+
+
+Additional comments:
+- Spaces are not dumb.
+
+
+- Dr. Rivas
