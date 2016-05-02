@@ -126,7 +126,7 @@ public class IDE extends JFrame implements ActionListener, KeyListener{
         
         editor = new JTextPane();
         editor.addKeyListener(this);
-        editor.setFont(new Font("Courier", 0, 14));
+        editor.setFont(new Font("Courier", 0, 12));
         
         
         open_files = new JScrollPane(files);
@@ -192,13 +192,14 @@ public class IDE extends JFrame implements ActionListener, KeyListener{
         
         while(in.hasNextLine()){
             try{
-                StyleConstants.setForeground(attributes, new Color(new Random().nextInt()));
                 doc.insertString(doc.getLength(), in.nextLine() + "\n", attributes);
             }
             catch(BadLocationException ex){
                 
             }
         }
+        
+        lex();
     }
 
     @Override
@@ -243,10 +244,7 @@ public class IDE extends JFrame implements ActionListener, KeyListener{
 
     @Override
     public void keyReleased(KeyEvent e) {
-        if(System.currentTimeMillis() - lastPressProcessed > 1000) {
-            lex();
-            lastPressProcessed = System.currentTimeMillis();
-        }
+        lex();
     }
     
     public boolean isKeyword(char c){
@@ -257,7 +255,6 @@ public class IDE extends JFrame implements ActionListener, KeyListener{
     
     public void lex(){
         String source = editor.getText();
-        editor.setText("");
         char c;
         int input = -1, strCount = 0, commentCount = 0;
         
@@ -267,7 +264,12 @@ public class IDE extends JFrame implements ActionListener, KeyListener{
         for (int i = 0; i < source.length(); i++) {
             try {
                 c = source.charAt(i);
-                input = key.get(c);
+                if (!(key.get(c) == null)) {
+                    input = key.get(c);
+                }
+                else{
+                    input = -2;
+                }
                 
                 if(!(input == -2)){
                     state = delta[state][input];
@@ -278,20 +280,45 @@ public class IDE extends JFrame implements ActionListener, KeyListener{
                         System.out.println(source.substring(i - 1, i));
                         break;
                     case 7: // var
-                        System.out.println(source.substring(i - 2, i + 1));
                         StyleConstants.setForeground(attributes, Color.BLUE);
-                        doc.insertString(doc.getLength(), source.substring(i - 2, i + 1), attributes);
+                        StyleConstants.setBold(attributes, true);
+                        
+                        try{
+                            doc.remove(i - 2, 3);
+                            doc.insertString(i - 2, source.substring(i - 2, i + 1), attributes);
+                        }
+                        catch(BadLocationException ex){
+                            doc.remove(i - 3, 3);
+                            doc.insertString(i - 3, source.substring(i - 2, i + 1), attributes);
+                        }
+                        System.out.println(source.substring(i - 2, i + 1));
                         break;
                     case 12: // id
                         System.out.println(source.substring(i, i + 1));
                         break;
                     case 14: // print
-                        System.out.println(source.substring(i - 4, i + 1));
+                        StyleConstants.setForeground(attributes, Color.BLUE);
+                        StyleConstants.setBold(attributes, true);
+                        
+                        try{
+                            doc.remove(i - 4, 5);
+                            doc.insertString(i - 4, source.substring(i - 4, i + 1), attributes);
+                            System.out.println(source.substring(i - 4, i + 1));
+                        }
+                        catch (BadLocationException ex) {
+                            doc.remove(i - 5, 5);
+                            doc.insertString(i - 5, source.substring(i - 4, i + 1), attributes);
+                            System.out.println(source.substring(i - 4, i + 1));
+                        }
                         break;
                     case 17:
                         strCount++;
                         break;
                     case 18: // num
+                        StyleConstants.setForeground(attributes, Color.ORANGE);
+
+                        doc.remove(i, 1);
+                        doc.insertString(i, source.substring(i, i + 1), attributes);
                         System.out.println(source.substring(i, i + 1));
                         break;
                     case 19:
@@ -304,10 +331,18 @@ public class IDE extends JFrame implements ActionListener, KeyListener{
                         strCount++;
                         break;
                     case 22: // string
+                        StyleConstants.setForeground(attributes, Color.GREEN.darker());
+                        
+                        doc.remove(i - strCount, strCount + 1);
+                        doc.insertString(i - strCount, source.substring(i - strCount, i + 1), attributes);
                         System.out.println(source.substring(i - strCount, i + 1));
                         strCount = 0;
                         break;
                     case 23: // num
+                        StyleConstants.setForeground(attributes, Color.ORANGE);
+
+                        doc.remove(i, 1);
+                        doc.insertString(i, source.substring(i, i + 1), attributes);
                         System.out.println(source.substring(i, i + 1));
                         break;
                     case 24:
@@ -323,6 +358,10 @@ public class IDE extends JFrame implements ActionListener, KeyListener{
                         strCount++;
                         break;
                     case 28: // string
+                        StyleConstants.setForeground(attributes, Color.GREEN.darker());
+                        
+                        doc.remove(i - strCount, strCount + 1);
+                        doc.insertString(i - strCount, source.substring(i - strCount, i + 1), attributes);
                         System.out.println(source.substring(i - strCount, i + 1));
                         strCount = 0;
                         break;
@@ -348,6 +387,10 @@ public class IDE extends JFrame implements ActionListener, KeyListener{
                         commentCount++;
                         break;
                     case 38: // comment
+                        StyleConstants.setForeground(attributes, Color.GRAY.darker());
+                        
+                        doc.remove(i - commentCount, commentCount + 1);
+                        doc.insertString(i - commentCount, source.substring(i - commentCount, i + 1), attributes);
                         System.out.println(source.substring(i - commentCount, i + 1));
                         commentCount = 0;
                         break;
@@ -361,6 +404,9 @@ public class IDE extends JFrame implements ActionListener, KeyListener{
         
         System.out.println(input);
         System.out.println("State: " + state + "\n");
+        
+        attributes.removeAttributes(attributes);
+        editor.setCharacterAttributes(attributes, true);
         
         state = States.q0.s;
     }
