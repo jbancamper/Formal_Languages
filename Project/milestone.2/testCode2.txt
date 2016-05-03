@@ -1,0 +1,1 @@
+print( 9+" int " )var aa = tprint( t )*- remember to save your work -*var nn = 9+0+8+" int "

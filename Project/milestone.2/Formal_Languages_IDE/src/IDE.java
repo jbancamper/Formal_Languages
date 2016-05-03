@@ -1,6 +1,8 @@
 
 
 import java.awt.Color;
+import java.awt.datatransfer.*;
+import java.awt.Toolkit;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -8,20 +10,29 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.*;
+import javax.swing.event.ListDataEvent;
+import javax.swing.event.ListDataListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.filechooser.*;
 import javax.swing.text.*;
 
 
-public class IDE extends JFrame implements ActionListener, KeyListener{
+public class IDE extends JFrame implements ActionListener, KeyListener,
+        ListSelectionListener{
     private final JSplitPane content;
     
     private final JMenuBar menuBar;
-    private final JMenu file, edit, options;
-    private final JMenuItem new_file, open, save;
+    private final JMenu file, edit, options, colorScheme;
+    private final JMenuItem new_file, open, save, cut, copy, paste, light, dark;
+    
+    private ArrayList<String> fileContents;
     
     public JTextPane editor;
     private JScrollPane open_files;
@@ -30,7 +41,14 @@ public class IDE extends JFrame implements ActionListener, KeyListener{
     
     private HashMap<Character, Integer> key;
     
+    DefaultListModel model = new DefaultListModel();
+    
     private long lastPressProcessed = 0;
+
+    @Override
+    public void valueChanged(ListSelectionEvent e) {
+        System.out.println();
+    }
     
     public enum States{
       q0(0), q1(1), q2(2), q3(3), q4(4), q5(5), q6(6), q7(7), q8(8), q9(9),
@@ -44,9 +62,9 @@ public class IDE extends JFrame implements ActionListener, KeyListener{
       private States(int a){
           this.s = a;
       }
-      
-      
     };
+    
+    private boolean dark_theme;
     
     private int delta[][] = {
         //    a            b             c           d           e              f           g            h            i             j           k            l               m           n           o           p           q               r           s           t           u               v           w               x           y           z           0               1             2             3             4             5           6               7           8             9              (               )            +           =           space           "            -             *
@@ -107,22 +125,48 @@ public class IDE extends JFrame implements ActionListener, KeyListener{
         open = new JMenuItem("Open File...");
         save = new JMenuItem("Save");
         
+        cut = new JMenuItem("Cut");
+        copy = new JMenuItem("Copy");
+        paste = new JMenuItem("Paste");
+        
+        colorScheme = new JMenu("Color Scheme");
+        
+        light = new JMenuItem("Light Theme");
+        dark = new JMenuItem("Dark Theme");
+        
         new_file.addActionListener(this);
         open.addActionListener(this);
         save.addActionListener(this);
+        
+        cut.addActionListener(this);
+        copy.addActionListener(this);
+        paste.addActionListener(this);
+        
+        light.addActionListener(this);
+        dark.addActionListener(this);
         
         file.add(new_file);
         file.add(open);
         file.add(save);
         
+        edit.add(cut);
+        edit.add(copy);
+        edit.add(paste);
+        
+        colorScheme.add(light);
+        colorScheme.add(dark);
+        
+        options.add(colorScheme);
+        
         menuBar.add(file);
         menuBar.add(edit);
         menuBar.add(options);
         
-        String a[] = {"index.txt", "loops.txt"};
-        files = new JList(a);
+        files = new JList(model);
         files.setBackground(new Color(220,220,220));
         files.setFocusable(false);
+        
+        files.addListSelectionListener((ListSelectionListener) this);
         
         editor = new JTextPane();
         editor.addKeyListener(this);
@@ -146,6 +190,10 @@ public class IDE extends JFrame implements ActionListener, KeyListener{
         
         this.setJMenuBar(menuBar);
         this.add(content);
+        
+        dark_theme = false;
+        
+        fileContents = new ArrayList<>();
         
         state = States.q0.s;
         
@@ -194,9 +242,7 @@ public class IDE extends JFrame implements ActionListener, KeyListener{
             try{
                 doc.insertString(doc.getLength(), in.nextLine() + "\n", attributes);
             }
-            catch(BadLocationException ex){
-                
-            }
+            catch(BadLocationException ex){}
         }
         
         lex();
@@ -204,7 +250,6 @@ public class IDE extends JFrame implements ActionListener, KeyListener{
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        System.out.println(e.getActionCommand());
         
         if (e.getActionCommand().equals("Open File...")) {
             JFileChooser fc = new JFileChooser();
@@ -216,7 +261,7 @@ public class IDE extends JFrame implements ActionListener, KeyListener{
 
             if (returnVal == JFileChooser.APPROVE_OPTION) {
                 File file = fc.getSelectedFile();
-             
+                model.add(files.getModel().getSize(), file.getName());
                 System.out.println("Opening: " + file.getName() + ".\n");
                 openFile(file);
             } 
@@ -225,11 +270,65 @@ public class IDE extends JFrame implements ActionListener, KeyListener{
             }
         }
         else if(e.getActionCommand().equals("New File")){
-            
+            model.add(files.getModel().getSize(), "untitiled");
         }
         
         else if(e.getActionCommand().equals("Save")){
+            JFileChooser fc = new JFileChooser(new File(System.getProperty("user.dir")));
+            fc.showSaveDialog(null);
             
+            int retrival = fc.showSaveDialog(null);
+            if (retrival == JFileChooser.APPROVE_OPTION) {
+                try {
+                    FileWriter fw = new FileWriter(fc.getSelectedFile() + ".txt");
+                    fw.write(editor.getText());
+                    fw.close();
+                } 
+                catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }
+        else if(e.getActionCommand().equals("Cut")){
+            String source = editor.getText();
+            
+            editor.setText(source.replace(editor.getSelectedText(), ""));
+        }
+        else if(e.getActionCommand().equals("Copy")){
+            StringSelection stringSelection = new StringSelection(editor.getSelectedText());
+            Clipboard clpbrd = Toolkit.getDefaultToolkit().getSystemClipboard();
+            clpbrd.setContents(stringSelection, null);
+        }
+        else if(e.getActionCommand().equals("Paste")){
+            try {
+                String result = "";
+                Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+                
+                clipboard.getContents(null);
+                
+                int caretPosition = editor.getCaretPosition();
+                
+                editor.getDocument().insertString(
+                        caretPosition, 
+                        (String) clipboard.getContents(null).getTransferData(DataFlavor.stringFlavor), 
+                        null
+                );
+                
+                lex();
+            } 
+            catch (BadLocationException | UnsupportedFlavorException | IOException ex) {
+                Logger.getLogger(IDE.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        else if(e.getActionCommand().equals("Light Theme")){
+            editor.setBackground(new Color(255, 255, 255));
+            dark_theme = false;
+            lex();
+        }
+        else if(e.getActionCommand().equals("Dark Theme")){
+            editor.setBackground(new Color(0, 21, 75));
+            dark_theme = true;
+            lex();
         }
     }
 
@@ -245,12 +344,6 @@ public class IDE extends JFrame implements ActionListener, KeyListener{
     @Override
     public void keyReleased(KeyEvent e) {
         lex();
-    }
-    
-    public boolean isKeyword(char c){
-        
-        
-        return true;
     }
     
     public void lex(){
@@ -280,7 +373,12 @@ public class IDE extends JFrame implements ActionListener, KeyListener{
                         System.out.println(source.substring(i - 1, i));
                         break;
                     case 7: // var
-                        StyleConstants.setForeground(attributes, Color.BLUE);
+                        if(dark_theme){
+                            StyleConstants.setForeground(attributes, Color.ORANGE);
+                        }
+                        else{
+                            StyleConstants.setForeground(attributes, Color.BLUE);
+                        }
                         StyleConstants.setBold(attributes, true);
                         
                         try{
@@ -297,7 +395,12 @@ public class IDE extends JFrame implements ActionListener, KeyListener{
                         System.out.println(source.substring(i, i + 1));
                         break;
                     case 14: // print
-                        StyleConstants.setForeground(attributes, Color.BLUE);
+                        if(dark_theme){
+                            StyleConstants.setForeground(attributes, Color.ORANGE);
+                        }
+                        else{
+                            StyleConstants.setForeground(attributes, Color.BLUE);
+                        }
                         StyleConstants.setBold(attributes, true);
                         
                         try{
@@ -315,8 +418,13 @@ public class IDE extends JFrame implements ActionListener, KeyListener{
                         strCount++;
                         break;
                     case 18: // num
-                        StyleConstants.setForeground(attributes, Color.ORANGE);
-
+                        if(dark_theme){
+                            StyleConstants.setForeground(attributes, Color.GREEN.darker());
+                        }
+                        else{
+                            StyleConstants.setForeground(attributes, Color.ORANGE);
+                        }
+                        StyleConstants.setBold(attributes, true);
                         doc.remove(i, 1);
                         doc.insertString(i, source.substring(i, i + 1), attributes);
                         System.out.println(source.substring(i, i + 1));
@@ -331,16 +439,26 @@ public class IDE extends JFrame implements ActionListener, KeyListener{
                         strCount++;
                         break;
                     case 22: // string
-                        StyleConstants.setForeground(attributes, Color.GREEN.darker());
-                        
+                        if(dark_theme){
+                            StyleConstants.setForeground(attributes, Color.YELLOW);
+                        }
+                        else{
+                            StyleConstants.setForeground(attributes, Color.GREEN.darker());
+                        }
+                        StyleConstants.setBold(attributes, true);
                         doc.remove(i - strCount, strCount + 1);
                         doc.insertString(i - strCount, source.substring(i - strCount, i + 1), attributes);
                         System.out.println(source.substring(i - strCount, i + 1));
                         strCount = 0;
                         break;
                     case 23: // num
-                        StyleConstants.setForeground(attributes, Color.ORANGE);
-
+                        if(dark_theme){
+                            StyleConstants.setForeground(attributes, Color.GREEN.darker());
+                        }
+                        else{
+                            StyleConstants.setForeground(attributes, Color.ORANGE);
+                        }
+                        StyleConstants.setBold(attributes, true);
                         doc.remove(i, 1);
                         doc.insertString(i, source.substring(i, i + 1), attributes);
                         System.out.println(source.substring(i, i + 1));
@@ -358,8 +476,13 @@ public class IDE extends JFrame implements ActionListener, KeyListener{
                         strCount++;
                         break;
                     case 28: // string
-                        StyleConstants.setForeground(attributes, Color.GREEN.darker());
-                        
+                        if(dark_theme){
+                            StyleConstants.setForeground(attributes, Color.YELLOW);
+                        }
+                        else{
+                            StyleConstants.setForeground(attributes, Color.GREEN.darker());
+                        }
+                        StyleConstants.setBold(attributes, true);
                         doc.remove(i - strCount, strCount + 1);
                         doc.insertString(i - strCount, source.substring(i - strCount, i + 1), attributes);
                         System.out.println(source.substring(i - strCount, i + 1));
@@ -387,7 +510,12 @@ public class IDE extends JFrame implements ActionListener, KeyListener{
                         commentCount++;
                         break;
                     case 38: // comment
-                        StyleConstants.setForeground(attributes, Color.GRAY.darker());
+                        if(dark_theme){
+                            StyleConstants.setForeground(attributes, new Color(0, 157, 247));
+                        }
+                        else{
+                            StyleConstants.setForeground(attributes, Color.GRAY.darker());
+                        }
                         
                         doc.remove(i - commentCount, commentCount + 1);
                         doc.insertString(i - commentCount, source.substring(i - commentCount, i + 1), attributes);
@@ -406,6 +534,9 @@ public class IDE extends JFrame implements ActionListener, KeyListener{
         System.out.println("State: " + state + "\n");
         
         attributes.removeAttributes(attributes);
+        if(dark_theme){
+            StyleConstants.setForeground(attributes, Color.white);
+        }
         editor.setCharacterAttributes(attributes, true);
         
         state = States.q0.s;
