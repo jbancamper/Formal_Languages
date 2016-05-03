@@ -1,0 +1,5 @@
+print( 3 )
+a = " late "
+print( 9+a )
+var t
+t = 0

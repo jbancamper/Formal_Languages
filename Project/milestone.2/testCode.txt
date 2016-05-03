@@ -1,4 +1,1 @@
-var a
-a = 0
-print (a)
-*- commment sucks -*
+var aa = 0print( a )*- commment sucks -*

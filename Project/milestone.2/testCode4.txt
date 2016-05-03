@@ -1,0 +1,5 @@
+*- comment -*
+var a
+print( 0 )
+a = " why not "
+print( " cool " )
